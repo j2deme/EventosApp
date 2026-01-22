@@ -108,8 +108,22 @@ def check_database_connection():
 # Configurar locale para español
 try:
     locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-except:
-    locale.setlocale(locale.LC_TIME, 'Spanish_Spain.1252')  # Windows
+    app.logger.info("Locale español configurado: es_ES.UTF-8")
+except locale.Error:
+    try:
+        # Fallback 1: Intentar con formato más común
+        locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+        app.logger.info("Locale español configurado: es_ES.utf8")
+    except locale.Error:
+        try:
+            # Fallback 2: Intentar locale genérico
+            locale.setlocale(locale.LC_TIME, 'es_ES')
+            app.logger.info("Locale español configurado: es_ES")
+        except locale.Error:
+            # Fallback 3: Si nada funciona, usar locale del sistema y continuar
+            app.logger.warning(
+                "Locale español no disponible. Usando configuración regional por defecto.")
+            pass  # Continuar sin configurar locale
 
 # Modelos
 

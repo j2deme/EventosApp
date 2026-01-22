@@ -91,6 +91,8 @@ apt-get install -y --no-install-recommends \
     supervisor \
     curl > /dev/null 2>&1
 
+apt-get install -y --no-install-recommends locales && locale-gen es_ES.UTF-8 > /dev/null 2>&1
+
 log "✅ Dependencias del sistema instaladas."
 
 # ============================================
