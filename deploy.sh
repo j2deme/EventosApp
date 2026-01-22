@@ -94,7 +94,23 @@ apt-get install -y --no-install-recommends \
 log "✅ Dependencias del sistema instaladas."
 
 # ============================================
-# 4. LÓGICA PRINCIPAL: FUSIÓN SEGURA DE .env
+# 4. SINCRONIZAR CÓDIGO
+# ============================================
+log "🔄 Sincronizando código..."
+if ! id "$APP_USER" &>/dev/null; then
+    useradd -r -s /bin/bash -m -d "$APP_DIR" "$APP_USER"
+    log "  👤 Usuario $APP_USER creado."
+fi
+
+mkdir -p "$APP_DIR"
+# Usar rsync sin --progress para output más limpio
+rsync -av --exclude='.env' --exclude='venv/' --exclude='*.log' --exclude='*.sock' --exclude='.requirements_hash' \
+      --delete . "$APP_DIR/" > /dev/null 2>&1
+chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+log "✅ Código sincronizado."
+
+# ============================================
+# 5. LÓGICA PRINCIPAL: FUSIÓN SEGURA DE .env
 # ============================================
 log "🔍 Analizando configuración de entorno..."
 
@@ -198,22 +214,6 @@ else
         log "✅ Los archivos .env son consistentes. No hay cambios que aplicar."
     fi
 fi
-
-# ============================================
-# 5. SINCRONIZAR CÓDIGO
-# ============================================
-log "🔄 Sincronizando código..."
-if ! id "$APP_USER" &>/dev/null; then
-    useradd -r -s /bin/bash -m -d "$APP_DIR" "$APP_USER"
-    log "  👤 Usuario $APP_USER creado."
-fi
-
-mkdir -p "$APP_DIR"
-# Usar rsync sin --progress para output más limpio
-rsync -av --exclude='.env' --exclude='venv/' --exclude='*.log' --exclude='*.sock' --exclude='.requirements_hash' \
-      --delete . "$APP_DIR/" > /dev/null 2>&1
-chown -R "$APP_USER:$APP_USER" "$APP_DIR"
-log "✅ Código sincronizado."
 
 # ============================================
 # 6. CONFIGURAR ENTORNO Y SERVICIOS
