@@ -143,7 +143,10 @@ Asumiendo que se trabaja con una VM Debian (como Google Cloud VM), este proyecto
 
 ```bash
 # Conectarse a tu VM
-ssh usuario@ip-de-tu-vm
+ssh usuario@ip-de-tu-vm # O usa Google Cloud Shell con SSH
+
+# Necesario para clonar el repo
+sudo apt update && sudo apt install -y git
 
 # Clonar el repositorio (o subir los archivos)
 git clone https://github.com/j2deme/event-manager.git
