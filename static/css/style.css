@@ -1,0 +1,37 @@
+/* Estilos personalizados adicionales */
+
+/* Mejorar la experiencia táctil en móviles */
+@media (max-width: 640px) {
+
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Animaciones suaves */
+button,
+a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Estilos para el color picker */
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  width: 100%;
+  height: 40px;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
