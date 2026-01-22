@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Evento - {{ evento.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Editar Evento</h1>
+        <p class="text-gray-600 mt-2">Modifica los detalles del evento "{{ evento.nombre }}"</p>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <form method="POST" action="{{ url_for('editar_evento', id=evento.id) }}">
+            <div class="space-y-6">
+                <!-- Nombre -->
+                <div>
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre del Evento *
+                    </label>
+                    <input type="text" 
+                           id="nombre" 
+                           name="nombre" 
+                           value="{{ evento.nombre }}"
+                           required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Lugar -->
+                <div>
+                    <label for="lugar" class="block text-sm font-medium text-gray-700 mb-1">
+                        Lugar
+                    </label>
+                    <input type="text" 
+                           id="lugar" 
+                           name="lugar" 
+                           value="{{ evento.lugar or '' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Fechas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha y Hora Inicio *
+                        </label>
+                        <input type="datetime-local" 
+                               id="fecha_inicio" 
+                               name="fecha_inicio" 
+                               value="{{ evento.fecha_inicio.strftime('%Y-%m-%dT%H:%M') }}"
+                               required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">
+                            Fecha y Hora Fin *
+                        </label>
+                        <input type="datetime-local" 
+                               id="fecha_fin" 
+                               name="fecha_fin" 
+                               value="{{ evento.fecha_fin.strftime('%Y-%m-%dT%H:%M') }}"
+                               required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <!-- Color e Icono -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="color" class="block text-sm font-medium text-gray-700 mb-1">
+                            Color de Etiqueta
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <input type="color" 
+                                   id="color" 
+                                   name="color" 
+                                   value="{{ evento.color or '#3B82F6' }}"
+                                   class="w-16 h-10 px-1 border border-gray-300 rounded-lg cursor-pointer">
+                            <div class="flex-1">
+                                <input type="text" 
+                                       id="color_text" 
+                                       value="{{ evento.color or '#3B82F6' }}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       readonly>
+                                <p class="text-xs text-gray-500 mt-1">Código HEX del color</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="icono" class="block text-sm font-medium text-gray-700 mb-1">
+                            Icono
+                        </label>
+                        <select id="icono" 
+                                name="icono" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="calendar" {% if evento.icono == 'calendar' %}selected{% endif %}>
+                                Calendario
+                            </option>
+                            <option value="music" {% if evento.icono == 'music' %}selected{% endif %}>
+                                Música
+                            </option>
+                            <option value="graduation-cap" {% if evento.icono == 'graduation-cap' %}selected{% endif %}>
+                                Graduación
+                            </option>
+                            <option value="users" {% if evento.icono == 'users' %}selected{% endif %}>
+                                Reunión
+                            </option>
+                            <option value="briefcase" {% if evento.icono == 'briefcase' %}selected{% endif %}>
+                                Negocios
+                            </option>
+                            <option value="gamepad" {% if evento.icono == 'gamepad' %}selected{% endif %}>
+                                Juegos
+                            </option>
+                            <option value="utensils" {% if evento.icono == 'utensils' %}selected{% endif %}>
+                                Comida
+                            </option>
+                            <option value="heart" {% if evento.icono == 'heart' %}selected{% endif %}>
+                                Salud
+                            </option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Icono de Font Awesome</p>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div>
+                            <p class="font-medium text-blue-800">Información del evento</p>
+                            <p class="text-blue-700 text-sm mt-1">
+                                Creado el: {{ evento.creado_en.strftime('%d/%m/%Y a las %H:%M') }}<br>
+                                Asistencias registradas: {{ evento.asistencias|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones -->
+            <div class="mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    <i class="fas fa-save mr-2"></i> Guardar Cambios
+                </button>
+                <a href="{{ url_for('detalle_evento', id=evento.id) }}" 
+                   class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium text-center">
+                    <i class="fas fa-times mr-2"></i> Cancelar
+                </a>
+                <a href="{{ url_for('listar_eventos') }}" 
+                   class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-center">
+                    <i class="fas fa-list mr-2"></i> Ver Todos
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script para sincronizar el input de color -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorPicker = document.getElementById('color');
+    const colorText = document.getElementById('color_text');
+    
+    // Sincronizar al cambiar el picker
+    colorPicker.addEventListener('input', function() {
+        colorText.value = this.value;
+    });
+    
+    // Sincronizar al cargar la página
+    colorText.value = colorPicker.value;
+});
+</script>
+{% endblock %}

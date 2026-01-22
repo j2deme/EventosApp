@@ -1,0 +1,219 @@
+{% extends "base.html" %} {% block title %}{{ evento.nombre }} - Gestión de
+Eventos{% endblock %} {% block content %}
+<div class="max-w-4xl mx-auto">
+  <!-- Encabezado -->
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8"
+  >
+    <div>
+      <div class="flex items-center space-x-3 mb-2">
+        <div
+          class="p-3 rounded-xl"
+          style="background-color: {{ evento.color }}20;"
+        >
+          <i
+            class="fas fa-{{ evento.icono }} text-2xl"
+            style="color: {{ evento.color }};"
+          ></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">{{ evento.nombre }}</h1>
+      </div>
+      <p class="text-gray-600">{{ evento.lugar or 'Sin lugar definido' }}</p>
+    </div>
+
+    <div class="mt-4 md:mt-0 flex space-x-2">
+      <a
+        href="{{ url_for('editar_evento', id=evento.id) }}"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        <i class="fas fa-edit mr-2"></i> Editar
+      </a>
+      <button
+        onclick="confirmarBorrado({{ evento.id }})"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        <i class="fas fa-trash mr-2"></i> Eliminar
+      </button>
+      <form
+        id="form-borrado-{{ evento.id }}"
+        action="{{ url_for('eliminar_evento', id=evento.id) }}"
+        method="POST"
+        class="hidden"
+      >
+        {% if mostrar_confirmacion %}
+        <input type="hidden" name="confirmar_borrado" value="true" />
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  {% if mostrar_confirmacion %}
+  <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+      <div>
+        <h3 class="font-semibold text-yellow-800">¡Atención!</h3>
+        <p class="text-yellow-700">
+          Este evento tiene {{ evento.asistencias|length }} asistencias
+          registradas. ¿Estás seguro de que quieres eliminarlo?
+        </p>
+        <form
+          action="{{ url_for('eliminar_evento', id=evento.id) }}"
+          method="POST"
+          class="mt-3"
+        >
+          <input type="hidden" name="confirmar_borrado" value="true" />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Sí, eliminar evento y todas las asistencias
+          </button>
+          <a
+            href="{{ url_for('detalle_evento', id=evento.id) }}"
+            class="ml-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+          >
+            Cancelar
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Detalles -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Información del Evento -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">
+        Detalles del Evento
+      </h2>
+      <div class="space-y-4">
+        <div class="flex items-start">
+          <i class="fas fa-calendar-day text-gray-400 mt-1 mr-3"></i>
+          <div>
+            <p class="font-medium text-gray-700">Inicio</p>
+            <p class="text-gray-900">
+              {{ evento.fecha_inicio.strftime('%A, %d de %B de %Y a las %H:%M')
+              }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <i class="fas fa-calendar-times text-gray-400 mt-1 mr-3"></i>
+          <div>
+            <p class="font-medium text-gray-700">Fin</p>
+            <p class="text-gray-900">
+              {{ evento.fecha_fin.strftime('%A, %d de %B de %Y a las %H:%M') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <i class="fas fa-map-marker-alt text-gray-400 mt-1 mr-3"></i>
+          <div>
+            <p class="font-medium text-gray-700">Lugar</p>
+            <p class="text-gray-900">{{ evento.lugar or 'No especificado' }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <i class="fas fa-palette text-gray-400 mt-1 mr-3"></i>
+          <div>
+            <p class="font-medium text-gray-700">Color e Icono</p>
+            <div class="flex items-center space-x-2 mt-1">
+              <div
+                class="w-6 h-6 rounded-full"
+                style="background-color: {{ evento.color }};"
+              ></div>
+              <span class="text-gray-900">{{ evento.color }}</span>
+              <i
+                class="fas fa-{{ evento.icono }} ml-2"
+                style="color: {{ evento.color }};"
+              ></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asistencias -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-900">Asistencias</h2>
+        <span
+          class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+        >
+          {{ evento.asistencias|length }} registros
+        </span>
+      </div>
+
+      <div class="mb-6">
+        <form
+          method="POST"
+          action="{{ url_for('registrar_asistencia', evento_id=evento.id) }}"
+          class="flex space-x-2"
+        >
+          <input
+            type="text"
+            name="nombre"
+            placeholder="Nombre del asistente"
+            required
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <i class="fas fa-user-plus"></i>
+          </button>
+        </form>
+      </div>
+
+      {% if evento.asistencias %}
+      <div class="space-y-3">
+        {% for asistencia in evento.asistencias %}
+        <div
+          class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+        >
+          <div>
+            <p class="font-medium text-gray-900">{{ asistencia.nombre }}</p>
+            <p class="text-sm text-gray-500">
+              Registrado: {{ asistencia.timestamp.strftime('%d/%m/%Y %H:%M') }}
+            </p>
+          </div>
+          <form
+            action="{{ url_for('eliminar_asistencia', id=asistencia.id) }}"
+            method="POST"
+          >
+            <button
+              type="submit"
+              onclick="return confirm('¿Eliminar esta asistencia?')"
+              class="p-2 text-red-600 hover:text-red-800"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-8">
+        <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">No hay asistencias registradas</p>
+      </div>
+      {% endif %}
+
+      <div class="mt-6">
+        <a
+          href="{{ url_for('listar_asistencias', evento_id=evento.id) }}"
+          class="block text-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+        >
+          <i class="fas fa-list mr-2"></i> Ver todas las asistencias
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
