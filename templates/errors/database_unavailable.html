@@ -1,0 +1,123 @@
+{% extends "base.html" %} {% block title %}Base de Datos No Disponible{%
+endblock %} {% block content %}
+<div
+  class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8 text-center">
+    <!-- Icono -->
+    <div class="mx-auto">
+      <i class="fas fa-database text-6xl text-gray-300"></i>
+    </div>
+
+    <!-- Mensaje principal -->
+    <div>
+      <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+        Base de Datos Temporalmente No Disponible
+      </h2>
+      <p class="mt-2 text-sm text-gray-600">
+        Estamos experimentando dificultades técnicas temporales.
+      </p>
+    </div>
+
+    <!-- Explicación amigable -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <i class="fas fa-info-circle text-blue-400"></i>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">¿Qué está pasando?</h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <p>
+              El servicio de base de datos en la nube está iniciando o en
+              mantenimiento. Esto es normal en servicios que ahorran recursos
+              cuando no hay uso.
+            </p>
+            <p class="mt-2">
+              La aplicación se recuperará automáticamente en 30-60 segundos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="space-y-4">
+      <div>
+        <button
+          onclick="window.location.reload()"
+          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <i class="fas fa-redo mr-2"></i> Reintentar Ahora
+        </button>
+      </div>
+
+      <div class="text-sm">
+        <a
+          href="{{ url_for('listar_eventos') }}"
+          class="font-medium text-blue-600 hover:text-blue-500"
+        >
+          Volver a la página principal
+        </a>
+        <span class="mx-2">•</span>
+        <a
+          href="#"
+          onclick="showTechnicalDetails()"
+          class="font-medium text-gray-600 hover:text-gray-500"
+        >
+          Detalles técnicos
+        </a>
+      </div>
+
+      <!-- Detalles técnicos (ocultos inicialmente) -->
+      <div id="technicalDetails" class="hidden text-left">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-gray-900 mb-2">
+            Información para desarrolladores:
+          </h4>
+          <p class="text-xs text-gray-600">
+            Error: Conexión al servicio de base de datos no disponible.<br />
+            Servicio: Railway PostgreSQL/MySQL<br />
+            Estado: Iniciando o en modo "dormido"<br />
+            Acción recomendada: Esperar 30 segundos y reintentar
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contador automático -->
+    <div class="pt-4">
+      <p class="text-sm text-gray-500">
+        Reintentando automáticamente en
+        <span id="countdown">30</span> segundos...
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Contador para reintento automático
+  let seconds = 30;
+  const countdownElement = document.getElementById("countdown");
+
+  const countdown = setInterval(() => {
+    seconds--;
+    countdownElement.textContent = seconds;
+
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      window.location.reload();
+    }
+  }, 1000);
+
+  // Mostrar detalles técnicos
+  function showTechnicalDetails() {
+    document.getElementById("technicalDetails").classList.toggle("hidden");
+  }
+
+  // Intento automático después de 30 segundos
+  setTimeout(() => {
+    window.location.reload();
+  }, 30000);
+</script>
+{% endblock %}

@@ -1,3 +1,5 @@
+from werkzeug.exceptions import ServiceUnavailable
+from sqlalchemy.exc import OperationalError, DatabaseError
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
@@ -8,6 +10,100 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app, engine_options={'pool_recycle': 300})
+
+# ============================================
+# MANEJADOR GLOBAL DE ERRORES DE CONEXIÓN A BD
+# ============================================
+
+
+@app.errorhandler(OperationalError)
+@app.errorhandler(DatabaseError)
+def handle_database_error(error):
+    """
+    Intercepta errores de conexión a la base de datos y muestra
+    una página amigable al usuario en lugar del error crudo.
+
+    Esto maneja casos como:
+    - Railway PostgreSQL en estado "dormido" o iniciando
+    - Conexiones perdidas por timeout
+    - Servidor de BD no disponible
+    """
+
+    # Log del error real (para debugging, no se muestra al usuario)
+    app.logger.error(f"Error de conexión a BD: {str(error)}")
+
+    # Verificar si es un error de conexión (patrones comunes)
+    error_msg = str(error).lower()
+    connection_keywords = [
+        'connection', 'connect', 'conexión', 'conectar',
+        'database system is not yet accepting connections',
+        'server closed the connection',
+        'could not connect to server',
+        'timeout expired',
+        'network'
+    ]
+
+    is_connection_error = any(
+        keyword in error_msg for keyword in connection_keywords)
+
+    if is_connection_error:
+        # Devolver una página HTML amigable con código 503 (Servicio No Disponible)
+        return render_template(
+            'errors/database_unavailable.html',
+            error_message="La base de datos está temporalmente no disponible",
+            recovery_message="Esto suele ocurrir cuando el servicio en la nube está iniciando. Por favor, intenta de nuevo en unos segundos."
+        ), 503
+    else:
+        # Para otros errores de BD, mostrar una página genérica
+        return render_template(
+            'errors/database_error.html',
+            error_message="Ha ocurrido un error inesperado con la base de datos"
+        ), 500
+
+# ============================================
+# MANEJADOR PARA ERROR 503 (SERVICE UNAVAILABLE)
+# ============================================
+
+
+@app.errorhandler(503)
+def service_unavailable(error):
+    """Manejador específico para errores 503"""
+    return render_template('errors/service_unavailable.html'), 503
+
+# ============================================
+# MIDDLEWARE: Verificar conexión antes de ciertas rutas
+# ============================================
+
+
+@app.before_request
+def check_database_connection():
+    """
+    Middleware opcional que verifica la conexión antes de rutas críticas.
+    Útil para endpoints de escritura (POST, PUT, DELETE).
+    """
+
+    # Solo verificar en métodos que modifican datos
+    if request.method in ['POST', 'PUT', 'DELETE', 'PATCH']:
+        try:
+            # Intenta una consulta simple para verificar la conexión
+            from sqlalchemy import text
+            db.session.execute(text('SELECT 1')).fetchall()
+        except Exception as e:
+            # Si falla, redirigir a una página informativa
+            app.logger.warning(
+                f"Conexión a BD no disponible para {request.path}: {str(e)}")
+
+            # Para AJAX/API, devolver JSON
+            if request.is_json or request.path.startswith('/api/'):
+                return jsonify({
+                    'error': 'database_unavailable',
+                    'message': 'La base de datos no está disponible temporalmente',
+                    'retry_after': 30  # Segundos
+                }), 503
+
+            # Para navegadores, redirigir a página informativa
+            return redirect(url_for('database_unavailable_page'))
+
 
 # Configurar locale para español
 try:
